@@ -284,6 +284,21 @@
       position: relative;
       overflow: hidden;
     }
+.hero-portrait {
+  padding: 0.6rem;
+}
+
+.hero-portrait img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 22px;
+  object-fit: cover;
+  aspect-ratio: 3 / 4;
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.85),
+    0 0 30px rgba(0, 0, 0, 0.8);
+}
 
     .hero-card::before {
       content: "ENGINE ERA ≠ FINAL FORM";
@@ -601,8 +616,8 @@
       </nav>
     </header>
 
-    <!-- HERO -->
-    <section class="hero" id="top">
+   <!-- HERO -->
+<section class="hero" id="top">
   <div class="hero-left">
     <div class="pill-badge">
       <span class="pill-dot"></span>
@@ -635,6 +650,12 @@
       Not a platform for politeness. A platform for
       <strong>truth, aesthetics, and spiritual violence on the board</strong>.
     </div>
+  </div>
+
+  <div class="hero-right">
+    <figure class="hero-card hero-portrait" aria-label="UziChess spirit illustration">
+      <img src="uzichess-hero.jpg" alt="Stylized duo walking through an alley, laughing together">
+    </figure>
   </div>
 </section>
 
