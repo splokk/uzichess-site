@@ -383,6 +383,67 @@
       color: var(--accent-strong);
       font-weight: 600;
     }
+<style>
+  .gm-quote-carousel {
+    margin-top: 1.4rem;
+  }
+
+  .gm-quote-card {
+    border-radius: 12px;
+    padding: 1.3rem 1.4rem;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    max-width: 680px;
+  }
+
+  .gm-quote-author {
+    opacity: 0.75;
+    font-size: 0.9rem;
+  }
+
+  .gm-quote-text {
+    margin-top: 0.55rem;
+    line-height: 1.55;
+    font-size: 1.02rem;
+  }
+
+  .gm-quote-tagline {
+    margin-top: 0.5rem;
+    font-size: 0.88rem;
+    opacity: 0.7;
+  }
+
+  .gm-quote-card.fade-out {
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+  }
+
+  .gm-quote-card.fade-in {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.25s ease-in, transform 0.25s ease-in;
+  }
+
+  .gm-quote-dots {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 0.9rem;
+  }
+
+  .gm-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.2);
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+
+  .gm-dot--active {
+    background: #f97316; /* liten Uzi-flamma */
+    transform: scale(1.2);
+  }
+</style>
 
     /* Sections */
 
@@ -755,6 +816,38 @@
         </aside>
       </div>
     </section>
+    <!-- GM QUOTES CAROUSEL -->
+<section class="section" id="gm-quotes">
+  <div class="section-header">
+    <div>
+      <div class="section-kicker">Voices of the Flame</div>
+      <h2 class="section-title">The Masters Who Lit the Path</h2>
+    </div>
+    <p class="section-sub">
+      These aren’t just quotes — they’re accelerants.
+    </p>
+  </div>
+
+  <div class="manifest-body">
+    <div class="gm-quote-carousel">
+      <div class="gm-quote-card">
+        <div class="gm-quote-author" id="gm-quote-author">
+          Mikhail Tal
+        </div>
+        <p class="gm-quote-text" id="gm-quote-text">
+          “You must take your opponent into a deep dark forest where 2+2=5,
+          and the path leading out is only wide enough for one.”
+        </p>
+        <div class="gm-quote-tagline" id="gm-quote-tagline">
+          Pure chaos poetry — engine logic dies in Tal’s woods.
+        </div>
+      </div>
+
+      <div class="gm-quote-dots" id="gm-quote-dots"></div>
+    </div>
+  </div>
+</section>
+
 <!-- FAKE GM REVIEWS -->
 <section class="section" id="gm-reviews">
   <div class="section-header">
@@ -1042,5 +1135,97 @@
     // tiny dynamic year
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>
+  <script>
+  const gmQuotes = [
+    {
+      author: 'Mikhail Tal',
+      text: '“You must take your opponent into a deep dark forest where 2+2=5, and the path leading out is only wide enough for one.”',
+      tag: 'Pure chaos poetry — engine logic dies in Tal’s woods.'
+    },
+    {
+      author: 'Paul Morphy (via Steinitz)',
+      text: '“He revolutionized chess. He brought life and dash and beauty into the game at a time when an age of dullness was about to set in.”',
+      tag: 'Morphy invented your rebellion.'
+    },
+    {
+      author: 'David Bronstein',
+      text: '“Chess is imagination... It is no secret that any talented player must in his soul be an artist.”',
+      tag: 'Middlegame as art, not algorithm — reject sterility.'
+    },
+    {
+      author: 'Mikhail Tal',
+      text: '“There are two types of sacrifices: correct ones, and mine.”',
+      tag: 'The purest Uzi-charged line ever spoken.'
+    },
+    {
+      author: 'David Bronstein',
+      text: '“Even in the heat of a middlegame battle the master must still bear in mind the outlines of a possible future ending.”',
+      tag: 'Tension without trading queens early — sacred Uzi doctrine.'
+    }
+  ];
+
+  const authorEl = document.getElementById('gm-quote-author');
+  const textEl = document.getElementById('gm-quote-text');
+  const tagEl = document.getElementById('gm-quote-tagline');
+  const cardEl = authorEl ? authorEl.closest('.gm-quote-card') : null;
+  const dotsContainer = document.getElementById('gm-quote-dots');
+
+  let gmIndex = 0;
+  let gmInterval = null;
+
+  function renderDots() {
+    if (!dotsContainer) return;
+    dotsContainer.innerHTML = '';
+    gmQuotes.forEach((_, i) => {
+      const dot = document.createElement('div');
+      dot.className = 'gm-dot' + (i === gmIndex ? ' gm-dot--active' : '');
+      dot.addEventListener('click', () => {
+        switchToQuote(i, true);
+      });
+      dotsContainer.appendChild(dot);
+    });
+  }
+
+  function switchToQuote(nextIndex, manual = false) {
+    if (!authorEl || !textEl || !tagEl || !cardEl) return;
+
+    cardEl.classList.remove('fade-in');
+    cardEl.classList.add('fade-out');
+
+    setTimeout(() => {
+      gmIndex = nextIndex;
+      const q = gmQuotes[gmIndex];
+      authorEl.textContent = q.author;
+      textEl.textContent = q.text;
+      tagEl.textContent = q.tag;
+
+      cardEl.classList.remove('fade-out');
+      cardEl.classList.add('fade-in');
+      renderDots();
+
+      if (manual) {
+        restartInterval();
+      }
+    }, 260);
+  }
+
+  function nextQuote() {
+    const next = (gmIndex + 1) % gmQuotes.length;
+    switchToQuote(next, false);
+  }
+
+  function restartInterval() {
+    if (gmInterval) clearInterval(gmInterval);
+    gmInterval = setInterval(nextQuote, 9000);
+  }
+
+  // init
+  if (authorEl && textEl && tagEl && cardEl) {
+    cardEl.classList.add('fade-in');
+    renderDots();
+    restartInterval();
+  }
+</script>
+
 </body>
 </html>
