@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>UziChess – Where the Fire Still Lives</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="UziChess is a rebellion against sterile chess, engine obedience, and the death of the middlegame. Where the fire still lives.">
+  <style>
+    :root {
+      --bg: #050509;
+      --bg-elevated: #101018;
+      --bg-soft: #151521;
+      --accent: #3bff52;                /* neon/acid green */
+      --accent-soft: rgba(59, 255, 82, 0.18);
+      --accent-strong: #55ff7a;
+      --text: #f5f5f5;
+      --muted: #a0a0b5;
+      --border: #2a2a3a;
+      --font-body: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+      --radius-lg: 18px;
+      --radius-xl: 26px;
+      --shadow-soft: 0 22px 60px rgba(0, 0, 0, 0.65);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at top, #15152a 0, #050509 55%, #020207 100%);
+      color: var(--text);
+      font-family: var(--font-body);
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    main {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 1.5rem 1.5rem 4rem;
+    }
+
+    /* HEADER / NAV */
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 0 0.4rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(18px);
+      background: linear-gradient(to bottom, rgba(5,5,9,0.96), rgba(5,5,9,0.82), transparent);
+    }
+
+    .logo-mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+
+    .logo-square {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      background: radial-gradient(circle at 30% 20%, #ffb3b3 0, #ff3b3b 34%, #3b0000 100%);
+      box-shadow:
+        0 0 12px rgba(255, 59, 59, 0.8),
+        0 0 40px rgba(255, 59, 59, 0.35);
+      position: relative;
+    }
+
+    .logo-square::after {
+      content: "";
+      position: absolute;
+      inset: 6px 5px;
+      border-radius: 4px;
+      border: 2px solid rgba(5, 5, 9, 0.9);
+      box-shadow: inset 0 0 12px rgba(0,0,0,0.9);
+    }
+
+    .logo-text-main {
+      font-size: 1.1rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+    }
+
+    .logo-text-sub {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--muted);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.4rem;
+      font-size: 0.85rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .nav-links a {
+      position: relative;
+      padding-bottom: 0.2rem;
+    }
+
+    .nav-links a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 0;
+      height: 1px;
+      background: var(--accent);
+      transition: width 0.18s ease-out;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    /* HERO */
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.2fr);
+      gap: 2.5rem;
+      padding: 2.8rem 0 3rem;
+    }
+
+    @media (max-width: 800px) {
+      .hero {
+        grid-template-columns: minmax(0, 1fr);
+        padding-top: 2rem;
+      }
+    }
+
+    .hero-left {
+      display: flex;
+      flex-direction: column;
+      gap: 1.9rem;
+    }
+
+    .pill-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 59, 59, 0.55);
+      background: radial-gradient(circle at 20% 0, rgba(255, 59, 59, 0.3), rgba(5,5,9,0.95));
+      box-shadow: 0 0 18px rgba(255, 59, 59, 0.35);
+    }
+
+    .pill-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 14px rgba(255, 59, 59, 0.9);
+    }
+
+    .hero-title {
+      font-size: clamp(2.3rem, 5vw, 3.4rem);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      line-height: 1.2;
+    }
+
+    .hero-em {
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      max-width: 34rem;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .hero-sub strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.9rem;
+      align-items: center;
+    }
+
+    .btn-primary,
+    .btn-ghost {
+      border-radius: 999px;
+      padding: 0.7rem 1.4rem;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      transition: transform 0.08s ease-out, box-shadow 0.08s ease-out, background 0.15s ease-out, border-color 0.15s ease-out;
+    }
+
+    .btn-primary {
+      background: radial-gradient(circle at 20% 0, #ffb3b3, #ff3b3b 35%, #3b0000 100%);
+      color: #0a0505;
+      border-color: rgba(255, 165, 165, 0.9);
+      box-shadow:
+        0 12px 35px rgba(0, 0, 0, 0.65),
+        0 0 24px rgba(255, 59, 59, 0.65);
+      font-weight: 600;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow:
+        0 15px 45px rgba(0, 0, 0, 0.75),
+        0 0 30px rgba(255, 59, 59, 0.8);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border-color: var(--border);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--accent);
+      color: var(--text);
+      background: rgba(255, 59, 59, 0.06);
+    }
+
+    .btn-caret {
+      font-family: var(--font-mono);
+      font-size: 1rem;
+    }
+
+    .hero-footnote {
+      font-size: 0.78rem;
+      color: var(--muted);
+      max-width: 22rem;
+      border-left: 2px solid rgba(255, 59, 59, 0.4);
+      padding-left: 0.8rem;
+    }
+
+    /* Hero right – board-ish card */
+
+    .hero-right {
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+    }
+
+    .hero-card {
+      width: 100%;
+      max-width: 380px;
+      background: radial-gradient(circle at 20% 10%, #1e1e32, #050509 55%, #020207);
+      border-radius: var(--radius-xl);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 1.4rem 1.4rem 1.2rem;
+      box-shadow: var(--shadow-soft);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card::before {
+      content: "ENGINE ERA ≠ FINAL FORM";
+      position: absolute;
+      top: 1.1rem;
+      right: -2.3rem;
+      transform: rotate(12deg);
+      font-size: 0.62rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.09);
+      white-space: nowrap;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.1rem;
+    }
+
+    .card-tag {
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .card-badge {
+      font-size: 0.68rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 59, 59, 0.5);
+      background: rgba(255, 59, 59, 0.08);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--accent-strong);
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 3px;
+      background: #050509;
+      border-radius: 14px;
+      padding: 8px;
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .mini-cell {
+      aspect-ratio: 1 / 1;
+      border-radius: 6px;
+      background: #101018;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.02);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.68rem;
+      color: var(--muted);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mini-cell--hot {
+      background: radial-gradient(circle at 30% 20%, #ffb3b3, #ff3b3b 40%, #3b0000 100%);
+      color: #0a0505;
+      font-weight: 600;
+      box-shadow:
+        0 0 18px rgba(255, 59, 59, 0.8),
+        0 0 30px rgba(255, 59, 59, 0.5);
+    }
+
+    .mini-cell--ghosted {
+      opacity: 0.25;
+    }
+
+    .mini-note {
+      margin-top: 0.9rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .mini-note strong {
+      color: var(--accent-strong);
+      font-weight: 600;
+    }
+
+    /* Sections */
+
+    .section {
+      margin-top: 3rem;
+      padding: 2.2rem 1.6rem;
+      background: linear-gradient(135deg, rgba(16,16,32,0.94), rgba(6,6,14,0.98));
+      border-radius: var(--radius-xl);
+      border: 1px solid rgba(255,255,255,0.04);
+      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.7);
+    }
+
+    .section-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 0.6rem;
+      margin-bottom: 1.7rem;
+    }
+
+    .section-kicker {
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .section-title {
+      font-size: 1.35rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .section-title span {
+      color: var(--accent);
+    }
+
+    .section-sub {
+      font-size: 0.9rem;
+      color: var(--muted);
+      max-width: 26rem;
+    }
+
+    .manifest-columns {
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.1fr);
+      gap: 2rem;
+    }
+
+    @media (max-width: 900px) {
+      .manifest-columns {
+        grid-template-columns: minmax(0,1fr);
+      }
+    }
+
+    .manifest-body {
+      font-size: 0.94rem;
+      line-height: 1.7;
+    }
+
+    .manifest-body h3 {
+      margin: 1.4rem 0 0.3rem;
+      font-size: 0.85rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent-strong);
+    }
+
+    .manifest-body p {
+      margin: 0.6rem 0;
+      color: var(--muted);
+    }
+
+    .manifest-highlight {
+      margin-top: 1.2rem;
+      padding: 0.9rem 1rem;
+      border-radius: var(--radius-lg);
+      background: radial-gradient(circle at 0 0, rgba(255, 59, 59, 0.25), rgba(10, 10, 16, 0.98));
+      border: 1px solid rgba(255, 59, 59, 0.7);
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-top: 0.4rem;
+    }
+
+    .pill {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      padding: 0.35rem 0.8rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--muted);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .pill--hot {
+      border-color: rgba(255, 59, 59, 0.7);
+      color: var(--accent-strong);
+      background: rgba(255, 59, 59, 0.08);
+    }
+
+    /* Pillars */
+
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 1.3rem;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 900px) {
+      .pillars-grid {
+        grid-template-columns: minmax(0,1fr);
+      }
+    }
+
+    .pillar-card {
+      background: var(--bg-soft);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255,255,255,0.05);
+      padding: 1rem 1rem 0.95rem;
+      font-size: 0.86rem;
+      color: var(--muted);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pillar-label {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--accent-soft);
+    }
+
+    .pillar-title {
+      margin: 0.3rem 0 0.55rem;
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+
+    .pillar-tagline {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    .pillar-tag {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--accent-strong);
+    }
+
+    .pillar-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 0 0, rgba(255,59,59,0.09), transparent 60%);
+      pointer-events: none;
+    }
+
+    /* Footer / call */
+
+    .footer {
+      margin-top: 3rem;
+      padding: 2.3rem 1.6rem 0;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .footer-top {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .footer-cta {
+      font-size: 0.82rem;
+    }
+
+    .footer-cta strong {
+      color: var(--accent-strong);
+    }
+
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      opacity: 0.75;
+    }
+
+    @media (max-width: 700px) {
+      .footer-bottom {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <main>
+    <header class="nav">
+      <div class="logo-mark">
+        <div class="logo-square"></div>
+        <div>
+          <div class="logo-text-main">UZICHESS</div>
+          <div class="logo-text-sub">FIRE &amp; MIDDLEGAME</div>
+        </div>
+      </div>
+      <nav class="nav-links">
+        <a href="#manifest">Manifesto</a>
+        <a href="#pillars">Pillars</a>
+        <a href="#join">Join</a>
+      </nav>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero" id="top">
+      <div class="hero-left">
+        <div class="pill-badge">
+          <span class="pill-dot"></span>
+          <span>Rebellion Against Sterile Chess</span>
+        </div>
+
+        <h1 class="hero-title">
+          Where the <span class="hero-em">Fire</span><br>
+          Still Lives.
+        </h1>
+
+        <p class="hero-sub">
+          <strong>UziChess</strong> is a declaration of war on sanitized,
+          engine-obedient chess. We exist for players who still want
+          <strong>chaos, intuition, risk</strong> — and who refuse to accept
+          a world where every middlegame is traded away “for equality”.
+        </p>
+
+        <div class="hero-actions">
+          <a href="#manifest" class="btn-primary">
+            Read the Manifesto
+            <span class="btn-caret">&rarr;</span>
+          </a>
+          <a href="#pillars" class="btn-ghost">
+            Why UziChess?
+          </a>
+        </div>
+
+        <div class="hero-footnote">
+          Not a platform for politeness. A platform for
+          <strong>truth, aesthetics, and spiritual violence on the board</strong>.
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <aside class="hero-card" aria-label="UziChess philosophy snapshot">
+          <div class="card-header">
+            <div class="card-tag">Middlegame Heatmap</div>
+            <div class="card-badge">Engine&nbsp;Hostile</div>
+          </div>
+
+          <div class="mini-grid" aria-hidden="true">
+            <div class="mini-cell mini-cell--ghosted">0.00</div>
+            <div class="mini-cell mini-cell--ghosted">0.00</div>
+            <div class="mini-cell mini-cell--ghosted">0.00</div>
+            <div class="mini-cell mini-cell--ghosted">0.00</div>
+
+            <div class="mini-cell mini-cell--ghosted">0.00</div>
+            <div class="mini-cell mini-cell--hot">sac</div>
+            <div class="mini-cell mini-cell--ghosted">0.00</div>
+            <div class="mini-cell mini-cell--ghosted">0.00</div>
+
+            <div class="mini-cell">??</div>
+            <div class="mini-cell mini-cell--hot">!!</div>
+            <div class="mini-cell">!? </div>
+            <div class="mini-cell mini-cell--ghosted">0.00</div>
+
+            <div class="mini-cell mini-cell--ghosted">0.00</div>
+            <div class="mini-cell mini-cell--ghosted">0.00</div>
+            <div class="mini-cell mini-cell--ghosted">0.00</div>
+            <div class="mini-cell mini-cell--ghosted">0.00</div>
+          </div>
+
+          <p class="mini-note">
+            <strong>UziChess principle:</strong>
+            if the engine calls it “?!”, but your soul calls it “!!” —
+            we at least look at it.
+          </p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- MANIFEST SECTION -->
+    <section class="section" id="manifest">
+      <div class="section-header">
+        <div>
+          <div class="section-kicker">The UziChess Manifesto</div>
+          <h2 class="section-title">A War on <span>Sterile Chess</span></h2>
+        </div>
+        <p class="section-sub">
+          This is not a feature list. It’s a line drawn in the sand.
+          UziChess exists to reclaim the
+          <strong>middlegame as sacred territory</strong> — the place where
+          humans and chaos still have something to say.
+        </p>
+      </div>
+
+      <div class="manifest-columns">
+        <article class="manifest-body">
+          <p><strong>Chess did not die quietly.</strong><br>
+            It died on camera — smiling, optimized, flattened
+            into something that no longer resembles the fire that once defined it.
+          </p>
+
+          <p><strong>We reject the Engine Regime as the final word.</strong><br>
+            40-move prep. Cowardly symmetry. Sterile endgames.
+            Perfect defense that kills creativity before it’s born.
+          </p>
+
+          <h3>I. Chess Was Never Meant To Be Solved</h3>
+          <p>
+            Morphy, Tal, Bronstein — they played like humans who wanted to
+            <em>feel</em> something. They didn’t worship 0.00.
+          </p>
+
+          <h3>II. The Middlegame Is Sacred</h3>
+          <p>
+            This is where ideas fight for breath, where intuition dances with chaos,
+            where sacrifices make no sense until they suddenly make all the sense.
+          </p>
+
+          <h3>III. Chess Is Art, Not Spreadsheet</h3>
+          <p>
+            You can automate moves. You cannot automate
+            <strong>vision, madness, beauty</strong>.
+          </p>
+
+          <div class="manifest-highlight">
+            UziChess is a sanctuary for players who feel physical disgust
+            when they see lifeless, pre-chewed “perfect” chess — and who still
+            believe the game is closer to <strong>music and poetry</strong>
+            than to accounting.
+          </div>
+        </article>
+
+        <aside>
+          <div class="manifest-highlight">
+            <strong>UziChess: Where the fire still lives.</strong><br><br>
+            If you feel the sickness when you see sterile chess,
+            if you long for chaos, intuition, and risk,
+            if you want the game to matter again —
+            <br><br><strong>Welcome home.</strong>
+          </div>
+
+          <div style="margin-top:1.4rem;">
+            <div class="section-kicker" style="margin-bottom:0.6rem;">We Stand For</div>
+            <div class="pill-list">
+              <div class="pill pill--hot">Chaos</div>
+              <div class="pill pill--hot">Intuition</div>
+              <div class="pill pill--hot">Risk</div>
+              <div class="pill">Human imperfection</div>
+              <div class="pill">Sacrifices</div>
+              <div class="pill">Unbalanced positions</div>
+              <div class="pill">Spiritual approach</div>
+            </div>
+          </div>
+
+          <div style="margin-top:1.6rem;">
+            <div class="section-kicker" style="margin-bottom:0.4rem;">We Reject</div>
+            <div class="pill-list">
+              <div class="pill">Sterile prep</div>
+              <div class="pill">Queen trades on move 10</div>
+              <div class="pill">Fear-based optimization</div>
+              <div class="pill">Symmetry worship</div>
+              <div class="pill">Engine obedience</div>
+              <div class="pill">Middlegame amputation</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- PILLARS -->
+    <section class="section" id="pillars">
+      <div class="section-header">
+        <div>
+          <div class="section-kicker">How UziChess Plays</div>
+          <h2 class="section-title">Core <span>Pillars</span></h2>
+        </div>
+        <p class="section-sub">
+          This is not about playing badly on purpose.
+          It’s about choosing <strong>meaningful risk</strong> over sterile safety,
+          and honoring lines that engines call “?!”, but your heart calls “!!”.
+        </p>
+      </div>
+
+      <div class="pillars-grid">
+        <article class="pillar-card">
+          <div class="pillar-label">Pillar I</div>
+          <h3 class="pillar-title">Engine-Hostile Creativity</h3>
+          <p class="pillar-tagline">
+            Positions that engines hate but humans love.
+          </p>
+          <p>
+            We actively seek positions where intuition matters more than
+            a 0.00 eval. Where long-term pressure, imbalance and piece
+            activity can’t be compressed into a single number.
+          </p>
+          <div class="pillar-tag">Accuracy &ne; Beauty</div>
+        </article>
+
+        <article class="pillar-card">
+          <div class="pillar-label">Pillar II</div>
+          <h3 class="pillar-title">Middlegame as Temple</h3>
+          <p class="pillar-tagline">
+            No voluntary early queen trades. No auto-liquidation.
+          </p>
+          <p>
+            We treat the middlegame as sacred terrain. If you can keep
+            tension, you keep it. If you can complicate, you do. Not out
+            of madness — but out of respect for the game’s living heart.
+          </p>
+          <div class="pillar-tag">Positions that Breathe</div>
+        </article>
+
+        <article class="pillar-card">
+          <div class="pillar-label">Pillar III</div>
+          <h3 class="pillar-title">Emotional Honesty</h3>
+          <p class="pillar-tagline">
+            Hate, disgust, awe — all allowed.
+          </p>
+          <p>
+            UziChess legitimizes emotional reactions to positions, players,
+            openings and “modern theory”. Aesthetic revulsion is data.
+            Beauty is an argument. We don’t apologize for caring.
+          </p>
+          <div class="pillar-tag">Spirit Over PR</div>
+        </article>
+      </div>
+    </section>
+
+    <!-- JOIN / CTA -->
+    <section class="section" id="join">
+      <div class="section-header">
+        <div>
+          <div class="section-kicker">Join the Fire</div>
+          <h2 class="section-title">This Is a <span>Rebellion of Spirit</span></h2>
+        </div>
+        <p class="section-sub">
+          UziChess is not “against” players. It’s against a culture that
+          flattened beauty into data and called it progress. If that bothers you,
+          you might already be one of us.
+        </p>
+      </div>
+
+      <div class="manifest-body">
+        <p>
+          Right now UziChess is a <strong>philosophy first, platform second</strong>.
+          A flag planted in the ground before the infrastructure is finished.
+        </p>
+        <p>
+          What comes next:
+        </p>
+        <ul style="margin:0.6rem 0 0.4rem 1.1rem; padding:0;">
+          <li>Experimental training tools that reward chaos, not safety.</li>
+          <li>Curated games that engines hate but humans remember.</li>
+          <li>Content and commentary from a blatantly biased, anti-sterile angle.</li>
+          <li>Eventually: a full ecosystem built around <em>fire-first chess</em>.</li>
+        </ul>
+        <p style="margin-top:0.9rem;">
+          If modern top-level chess makes you feel nothing, or worse —
+          <strong>makes you feel sick</strong> — keep an eye on this space.
+        </p>
+        <p style="margin-top:0.8rem;">
+          Until the tools land, you can start living the manifesto over the board:
+        </p>
+        <div class="pill-list" style="margin-top:0.6rem;">
+          <div class="pill pill--hot">Refuse sterile equality</div>
+          <div class="pill pill--hot">Protect the middlegame</div>
+          <div class="pill">Play for feeling</div>
+          <div class="pill">Value beauty over neatness</div>
+          <div class="pill">Trust your intuition</div>
+        </div>
+      </div>
+    </section>
+<section class="uzi-icon">
+  <h2 class="uzi-icon-title">First Uzi Icon</h2>
+  <p class="uzi-icon-sub">Paul Morphy’s Opera Game (1858)</p>
+
+  <p class="uzi-icon-desc">
+    The first sacred artifact of UziChess.<br>
+    A pure expression of intuition, violence, and aesthetic truth.<br>
+    A full game viewer is coming soon.
+  </p>
+
+  <div class="uzi-icon-links">
+    <a class="uzi-link" href="https://www.chessgames.com/perl/chessgame?gid=1233404" target="_blank">
+      View the Game on ChessGames →
+    </a>
+  </div>
+</section>
+
+<style>
+.uzi-icon {
+  max-width: 800px;
+  margin: 120px auto 80px;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.uzi-icon-title {
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 1.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.uzi-icon-sub {
+  color: var(--muted);
+  font-size: 1.05rem;
+  margin-bottom: 1.4rem;
+}
+
+.uzi-icon-desc {
+  color: var(--text);
+  line-height: 1.6;
+  margin-bottom: 2.2rem;
+  font-size: 0.95rem;
+}
+
+.uzi-icon-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.uzi-link {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+  letter-spacing: 0.05em;
+  transition: opacity 0.2s;
+}
+
+.uzi-link:hover {
+  opacity: 0.7;
+}
+</style>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <div class="footer-top">
+        <div class="footer-cta">
+          <strong>UziChess</strong> is a long war, not a quick fix.<br>
+          Today: manifesto. Tomorrow: tools, training, and a culture that remembers how to burn again.
+        </div>
+        <div>
+          <a href="#top" class="btn-ghost">
+            Back to top
+          </a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; <span id="year"></span> UziChess. Where the fire still lives.</span>
+        <span>Built in open defiance of 0.00.</span>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    // tiny dynamic year
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
