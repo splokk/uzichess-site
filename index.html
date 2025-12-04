@@ -692,7 +692,7 @@
     </div>
 
     <h1 class="hero-title">
-      Where the <span class="hero-em">Fire</span><br>
+      Where the <span class="fire-text">Fire</span><br>
       Still Lives.
     </h1>
 
@@ -1097,7 +1097,18 @@
   gap: 0.8rem;
   margin-top: 1rem;
 }
+.fire-text {
+  color: #00ff66; /* din nuvarande green neon */
+  transition: text-shadow 0.3s ease, color 0.3s ease;
+}
 
+.fire-text:hover {
+  color: #ffb866; /* varm gulorange, som eldreflektion */
+  text-shadow:
+    0 0 6px rgba(255, 150, 50, 0.75),
+    0 0 12px rgba(255, 100, 0, 0.6),
+    0 0 20px rgba(255, 80, 0, 0.45);
+}
 .uzi-link {
   color: var(--accent);
   font-weight: 600;
