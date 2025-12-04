@@ -236,21 +236,29 @@
       transition: transform 0.08s ease-out, box-shadow 0.08s ease-out, background 0.15s ease-out, border-color 0.15s ease-out;
     }
 
-    .btn-primary {
-      background: radial-gradient(circle at 20% 0, #ffb3b3, #ff3b3b 35%, #3b0000 100%);
-      color: #0a0505;
-      border-color: rgba(255, 165, 165, 0.9);
-      box-shadow:
-        0 12px 35px rgba(0, 0, 0, 0.65),
-        0 0 24px rgba(255, 59, 59, 0.65);
-      font-weight: 600;
-    }
+ .btn-primary {
+  background: linear-gradient(135deg, #ff5f2e, #ffb866);
+  color: #1c0f00; /* mörkt så texten poppar */
+  border: none;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  box-shadow:
+    0 0 12px rgba(255, 120, 30, 0.55),
+    0 0 24px rgba(255, 80, 0, 0.35);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
 
-    .btn-primary:hover {
-      transform: translateY(-1px);
-      box-shadow:
-        0 15px 45px rgba(0, 0, 0, 0.75),
-        0 0 30px rgba(255, 59, 59, 0.8);
+/* Hover: starkare glöd */
+.btn-primary:hover {
+  box-shadow:
+    0 0 16px rgba(255, 150, 50, 0.75),
+    0 0 32px rgba(255, 100, 0, 0.6),
+    0 0 48px rgba(255, 60, 0, 0.45);
+  transform: translateY(-2px);
+}
+
     }
 
     .btn-ghost {
