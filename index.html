@@ -55,56 +55,56 @@
 
     /* HEADER / NAV */
 
-    .nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1.2rem 0 0.4rem;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      backdrop-filter: blur(18px);
-      background: linear-gradient(to bottom, rgba(5,5,9,0.96), rgba(5,5,9,0.82), transparent);
-    }
+  /* HEADER / NAV */
 
-    .logo-mark {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.55rem;
-    }
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+  padding: 0.8rem 1.4rem;
+  position: sticky;
+  top: 0.75rem;
+  z-index: 10;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(88, 101, 242, 0.40), transparent 55%),
+    linear-gradient(to bottom, rgba(5, 5, 9, 0.98), rgba(5, 5, 9, 0.94));
+  border-radius: 16px;
+  box-shadow:
+    0 0 0 1px rgba(88, 101, 242, 0.55),
+    0 18px 50px rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(16px);
+}
 
-    .logo-square {
-      width: 26px;
-      height: 26px;
-      border-radius: 6px;
-      background: radial-gradient(circle at 30% 20%, #ffb3b3 0, #ff3b3b 34%, #3b0000 100%);
-      box-shadow:
-        0 0 12px rgba(255, 59, 59, 0.8),
-        0 0 40px rgba(255, 59, 59, 0.35);
-      position: relative;
-    }
+.logo-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+}
 
-    .logo-square::after {
-      content: "";
-      position: absolute;
-      inset: 6px 5px;
-      border-radius: 4px;
-      border: 2px solid rgba(5, 5, 9, 0.9);
-      box-shadow: inset 0 0 12px rgba(0,0,0,0.9);
-    }
+.logo-image {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow:
+    0 0 12px rgba(88, 101, 242, 0.85),
+    0 0 32px rgba(88, 101, 242, 0.45);
+  border: 1px solid rgba(240, 240, 255, 0.15);
+}
 
-    .logo-text-main {
-      font-size: 1.1rem;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-    }
+.logo-text-main {
+  font-size: 1.05rem;
+  letter-spacing: 0.18em;
+  text-transform: none; /* behåll exakt UZiCHESS */
+}
 
-    .logo-text-sub {
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.18em;
-      color: var(--muted);
-    }
+.logo-text-sub {
+  font-size: 0.63rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
 
     .nav-links {
       display: flex;
@@ -676,20 +676,21 @@
 </head>
 <body>
   <main>
-    <header class="nav">
-      <div class="logo-mark">
-        <div class="logo-square"></div>
-        <div>
-          <div class="logo-text-main">UZiCHESS</div>
-          <div class="logo-text-sub">FIRE &amp; MIDDLEGAME</div>
-        </div>
-      </div>
-      <nav class="nav-links">
-        <a href="#manifest">Manifesto</a>
-        <a href="#pillars">Pillars</a>
-        <a href="#join">Join</a>
-      </nav>
-    </header>
+  <header class="nav">
+  <div class="logo-mark">
+    <img src="uzi2.jpg" alt="UZiCHESS logo" class="logo-image">
+    <div>
+      <div class="logo-text-main">UZiCHESS</div>
+      <div class="logo-text-sub">FIRE &amp; MIDDLEGAME</div>
+    </div>
+  </div>
+  <nav class="nav-links">
+    <a href="#manifest">Manifesto</a>
+    <a href="#pillars">Pillars</a>
+    <a href="#join">Join</a>
+  </nav>
+</header>
+
 
    <!-- HERO -->
 <section class="hero" id="top">
