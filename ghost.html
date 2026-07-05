@@ -1,0 +1,565 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.wrap {
+  background: #0c0c0c;
+  padding: 10px;
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  color: #aaa;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  letter-spacing: 1.5px;
+  color: #444;
+  padding-bottom: 6px;
+  border-bottom: 0.5px solid #1e1e1e;
+}
+.green { color: #5a9a5a; }
+.main {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.board-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+canvas {
+  display: block;
+  position: absolute;
+  top: 0; left: 0;
+}
+#cBase { position: relative; }
+#cGhost { pointer-events: none; }
+.hint {
+  font-size: 14px;
+  color: #333;
+  letter-spacing: 1px;
+  text-align: center;
+  margin-top: 4px;
+}
+.side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 180px;
+}
+.panel {
+  background: #111;
+  border: 0.5px solid #1e1e1e;
+  border-radius: 3px;
+  padding: 7px 9px;
+}
+.ptitle {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: #383838;
+  margin-bottom: 5px;
+  padding-bottom: 4px;
+  border-bottom: 0.5px solid #1a1a1a;
+}
+.move-name {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #d8d8c8;
+  min-height: 20px;
+}
+.move-meta {
+  font-size: 14px;
+  color: #404040;
+  letter-spacing: 0.8px;
+  line-height: 2;
+  margin-top: 3px;
+}
+.delta-row {
+  font-size: 14px;
+  letter-spacing: 0.3px;
+  line-height: 1.4;
+  padding: 3px 0;
+  border-bottom: 0.5px solid #161616;
+  opacity: 0;
+  transform: translateX(-3px);
+  transition: opacity 0.25s, transform 0.25s;
+}
+.delta-row.show { opacity: 1; transform: translateX(0); }
+.delta-row.act { color: #6ab86a; }
+.delta-row.brk { color: #c85050; }
+.delta-row.mod { color: #b89040; }
+.delta-sub {
+  font-size: 12px;
+  color: #383838;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-top: 1px;
+}
+.ibar { display: flex; gap: 2px; margin-top: 5px; }
+.iblock {
+  height: 6px;
+  flex: 1;
+  border-radius: 1px;
+  background: #1a1a1a;
+  transition: background 0.5s;
+}
+.phase-label {
+  font-size: 14px;
+  letter-spacing: 1.5px;
+  color: #383838;
+  margin-top: 4px;
+  min-height: 14px;
+  transition: color 0.3s;
+}
+.statusbar {
+  display: flex;
+  gap: 14px;
+  padding-top: 6px;
+  border-top: 0.5px solid #1a1a1a;
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: #2e2e2e;
+}
+.statusbar span { color: #3a3a3a; }
+</style>
+
+<div class="wrap">
+  <div class="topbar">
+    <div>UZICHESS // GHOST BOARD PROTOCOL v0.3</div>
+    <div class="green">UNCLASSIFIED // PERCEPTUAL TRAINING</div>
+    <div>ENGINE: OFFLINE &nbsp;|&nbsp; EVAL: DISABLED</div>
+  </div>
+
+  <div class="main">
+    <div class="board-wrap" id="boardWrap">
+      <canvas id="cBase"></canvas>
+      <canvas id="cGhost"></canvas>
+    </div>
+
+    <div class="side">
+      <div class="panel">
+        <div class="ptitle">SELECTED MOVE</div>
+        <div class="move-name" id="moveName">—</div>
+        <div class="move-meta" id="moveMeta">PIECE: —<br>FROM: —<br>TO: —</div>
+      </div>
+
+      <div class="panel" style="flex:1">
+        <div class="ptitle">RELATIONAL DELTA</div>
+        <div id="deltaList">
+          <div style="font-size:9px;color:#2e2e2e;padding:6px 0;letter-spacing:1px;">
+            HOVER A PIECE<br>TO SEE MUTATION
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="ptitle">MUTATION INTENSITY</div>
+        <div class="ibar" id="ibar">
+          <div class="iblock"></div>
+          <div class="iblock"></div>
+          <div class="iblock"></div>
+          <div class="iblock"></div>
+          <div class="iblock"></div>
+        </div>
+        <div class="phase-label" id="phaseLabel">—</div>
+      </div>
+
+      <div class="panel">
+        <div class="ptitle">DOCTRINE</div>
+        <div style="font-size:9px;color:#303030;letter-spacing:0.5px;line-height:1.8;font-style:italic;">
+          "Do not ask whether<br>the move works.<br>Ask whether the<br>position is ready."
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint">HOVER WHITE PIECES — Re1 · Bb5 · Nf3</div>
+
+  <div class="statusbar">
+    <div>ENGINE: <span>OFFLINE</span></div>
+    <div>EVAL: <span>DISABLED</span></div>
+    <div>MODE: <span>PERCEPTUAL TRAINING</span></div>
+    <div>TIME HORIZON: <span>1–3 MOVES</span></div>
+  </div>
+</div>
+
+<script>
+const SQ = 90;
+const N  = 8;
+const W  = SQ * N;
+
+const wrap = document.getElementById('boardWrap');
+wrap.style.width  = W + 'px';
+wrap.style.height = W + 'px';
+
+const cB = document.getElementById('cBase');
+const cG = document.getElementById('cGhost');
+[cB, cG].forEach(c => { c.width = W; c.height = W; });
+const ctxB = cB.getContext('2d');
+const ctxG = cG.getContext('2d');
+
+// ── helpers ───────────────────────────────────────────────
+const fi  = f => 'abcdefgh'.indexOf(f);
+const ri  = r => 8 - parseInt(r);
+const cx  = sq => fi(sq[0]) * SQ + SQ / 2;
+const cy  = sq => ri(sq[1]) * SQ + SQ / 2;
+const sqX = sq => fi(sq[0]) * SQ;
+const sqY = sq => ri(sq[1]) * SQ;
+const pxSq = (x, y) => {
+  const f = Math.floor(x / SQ), r = Math.floor(y / SQ);
+  return (f >= 0 && f < 8 && r >= 0 && r < 8)
+    ? 'abcdefgh'[f] + String(8 - r) : null;
+};
+
+// ── position ──────────────────────────────────────────────
+const GLYPHS = {
+  wK:'♔',wQ:'♕',wR:'♖',wB:'♗',wN:'♘',wP:'♙',
+  bK:'♚',bQ:'♛',bR:'♜',bB:'♝',bN:'♞',bP:'♟'
+};
+const POS = {
+  e1:'wR',d1:'wQ',g1:'wK',b5:'wB',f3:'wN',
+  a1:'wR',h1:'wR',
+  a2:'wP',b2:'wP',c2:'wP',f2:'wP',g2:'wP',h2:'wP',d4:'wP',
+  e8:'bK',d8:'bQ',b8:'bR',d6:'bN',f6:'bN',
+  g7:'bP',h7:'bP',d7:'bP',e5:'bP',c7:'bP'
+};
+
+// ── move catalog ──────────────────────────────────────────
+const MOVES = {
+  e1: {
+    label:'Re1–e5', piece:'ROOK', from:'e1', to:'e5',
+    intensity: 4, intensityColor:'#c85050',
+    arrows:[
+      {from:'e1',to:'e5', rgb:[80,200,80],  ph:0, w:3},
+      {from:'e5',to:'e8', rgb:[80,200,80],  ph:1, w:2},
+      {from:'d1',to:'e5', rgb:[180,160,50], ph:2, w:1.5},
+    ],
+    zones:{ e5:'act', e6:'act', e7:'act', e8:'act', e1:'brk' },
+    ghost:{sq:'e5', p:'wR'},
+    deltas:[
+      {t:'act', l:'+ ROOK LINE',      s:'e5–e8 open file pressure'},
+      {t:'act', l:'+ KING EXPOSURE',  s:'e-file targets e8 directly'},
+      {t:'act', l:'+ BATTERY LATENT', s:'Qd1–Re5 vertical alignment'},
+      {t:'brk', l:'– BACK RANK',      s:'e1 defense abandoned'},
+      {t:'brk', l:'– ROOK RELATION',  s:'a1–e1 coordination severed'},
+      {t:'mod', l:'± d4 PAWN',        s:'pawn chain support modified'},
+    ]
+  },
+  b5: {
+    label:'Bb5–d7', piece:'BISHOP', from:'b5', to:'d7',
+    intensity: 3, intensityColor:'#b89040',
+    arrows:[
+      {from:'b5',to:'d7', rgb:[80,200,80],  ph:0, w:3},
+      {from:'d7',to:'e8', rgb:[80,200,80],  ph:1, w:2},
+      {from:'d7',to:'c8', rgb:[80,200,80],  ph:1, w:2},
+      {from:'b5',to:'h3', rgb:[160,60,60],  ph:2, w:1.5},
+    ],
+    zones:{ d7:'act', e8:'act', c8:'act', b5:'brk' },
+    ghost:{sq:'d7', p:'wB'},
+    deltas:[
+      {t:'act', l:'+ FORK THREAT',    s:'d7 attacks e8 and c8'},
+      {t:'act', l:'+ DIAGONAL OPEN',  s:'b5–e8 vector activated'},
+      {t:'brk', l:'– PIN RELEASED',   s:'b5 pressure on d7 knight gone'},
+      {t:'brk', l:'– WHITE DIAGONAL', s:'b5–d3 influence lost'},
+      {t:'mod', l:'± d6 KNIGHT',      s:'relational shift: d6 unconstrained'},
+    ]
+  },
+  f3: {
+    label:'Nf3–e5', piece:'KNIGHT', from:'f3', to:'e5',
+    intensity: 2, intensityColor:'#6ab86a',
+    arrows:[
+      {from:'f3',to:'e5', rgb:[80,200,80],  ph:0, w:3},
+      {from:'e5',to:'d7', rgb:[80,200,80],  ph:1, w:2},
+      {from:'e5',to:'f7', rgb:[80,200,80],  ph:1, w:2},
+      {from:'f3',to:'g5', rgb:[160,60,60],  ph:2, w:1.5},
+      {from:'f3',to:'h4', rgb:[160,60,60],  ph:2, w:1.5},
+    ],
+    zones:{ e5:'act', d7:'act', f7:'act', f3:'brk', g5:'brk' },
+    ghost:{sq:'e5', p:'wN'},
+    deltas:[
+      {t:'act', l:'+ OUTPOST e5',     s:'centralized, no pawn attack'},
+      {t:'act', l:'+ d7/f7 THREAT',   s:'fork geometry from e5'},
+      {t:'brk', l:'– f3 CONTROL',     s:'g5/h4 square influence lost'},
+      {t:'brk', l:'– CHECK LANE',     s:'f3 blocked Qd1 diagonal access'},
+      {t:'mod', l:'± KING COVER',     s:'f2–g2 pawn shelter shift'},
+    ]
+  }
+};
+
+// ── state ─────────────────────────────────────────────────
+let hov     = null;   // hovered square key
+let t       = 0;
+let phase   = 0;      // 0 emergence 1 coalescence 2 stabilized
+let phaseT  = 0;
+const PDUR  = [80, 110, 9999];
+const PNAME = ['EMERGENCE','COALESCENCE','STABILIZED'];
+const PCOL  = ['#5a7a5a','#8a904a','#8ab88a'];
+
+let particles = [];
+
+// ── board base ────────────────────────────────────────────
+function drawBase() {
+  for (let r = 0; r < 8; r++) {
+    for (let f = 0; f < 8; f++) {
+      ctxB.fillStyle = (r+f)%2===0 ? '#242424' : '#181818';
+      ctxB.fillRect(f*SQ, r*SQ, SQ, SQ);
+    }
+  }
+  ctxB.save();
+  ctxB.font = '7px monospace';
+  ctxB.fillStyle = '#333';
+  'abcdefgh'.split('').forEach((l,i)=>{
+    ctxB.textAlign='center';
+    ctxB.fillText(l, i*SQ+SQ/2, W-2);
+  });
+  for(let i=0;i<8;i++){
+    ctxB.textAlign='left';
+    ctxB.fillText(String(8-i), 2, i*SQ+9);
+  }
+  ctxB.restore();
+
+  // pieces on base board (always visible, full opacity)
+  ctxB.save();
+  ctxB.font = `${Math.floor(SQ*0.70)}px serif`;
+  ctxB.textAlign='center'; ctxB.textBaseline='middle';
+  for (const [sq,p] of Object.entries(POS)) {
+    ctxB.fillStyle = p[0]==='w' ? '#ddd' : '#303030';
+    ctxB.fillText(GLYPHS[p], cx(sq), cy(sq)+2);
+  }
+  ctxB.restore();
+}
+
+// ── ghost layer ───────────────────────────────────────────
+function arrow(from, to, rgb, op, dashOff, dashed, lw) {
+  const x1=cx(from),y1=cy(from),x2=cx(to),y2=cy(to);
+  const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);
+  if(len<1) return;
+  const ux=dx/len,uy=dy/len;
+  const sx=x1+ux*9,sy=y1+uy*9;
+  const ex=x2-ux*11,ey=y2-uy*11;
+  const hw=5.5,ax=-uy*hw,ay=ux*hw;
+  const col=`rgba(${rgb[0]},${rgb[1]},${rgb[2]},${op})`;
+
+  ctxG.save();
+  ctxG.strokeStyle=col; ctxG.fillStyle=col;
+  ctxG.lineWidth=lw; ctxG.lineCap='round';
+  if(dashed){ ctxG.setLineDash([5,5]); ctxG.lineDashOffset=dashOff; }
+  ctxG.beginPath(); ctxG.moveTo(sx,sy); ctxG.lineTo(ex,ey); ctxG.stroke();
+  ctxG.setLineDash([]);
+  ctxG.beginPath();
+  ctxG.moveTo(x2-ux*14+ax,y2-uy*14+ay);
+  ctxG.lineTo(x2,y2);
+  ctxG.lineTo(x2-ux*14-ax,y2-uy*14-ay);
+  ctxG.closePath(); ctxG.fill();
+  ctxG.restore();
+}
+
+function arrowOp(ph) {
+  if(phase===0){
+    if(ph===0) return 0.55+0.25*Math.sin(t*0.06);
+    return 0.04+0.04*Math.sin(t*0.04+ph*1.2);
+  }
+  if(phase===1){
+    if(ph<=1) return 0.72+0.18*Math.sin(t*0.05);
+    return 0.3+0.15*Math.sin(t*0.06);
+  }
+  return 0.9;
+}
+
+function ghostPiece(mv) {
+  const alpha = 0.32 + 0.16*Math.sin(t*0.07);
+  ctxG.save();
+  ctxG.globalAlpha = alpha;
+  ctxG.font = `${Math.floor(SQ*0.70)}px serif`;
+  ctxG.textAlign='center'; ctxG.textBaseline='middle';
+  ctxG.fillStyle = '#7ae87a';
+  ctxG.fillText(GLYPHS[mv.ghost.p], cx(mv.ghost.sq), cy(mv.ghost.sq)+2);
+
+  // ghost piece square glow
+  ctxG.globalAlpha = 0.18+0.10*Math.sin(t*0.07);
+  ctxG.fillStyle = '#40c040';
+  ctxG.fillRect(sqX(mv.ghost.sq), sqY(mv.ghost.sq), SQ, SQ);
+  ctxG.restore();
+}
+
+function zones(mv) {
+  for(const [sq, type] of Object.entries(mv.zones)){
+    const a = type==='act'
+      ? 0.13+0.07*Math.sin(t*0.08 + fi(sq[0])*0.7)
+      : 0.12+0.06*Math.sin(t*0.06 + ri(sq[1])*0.5);
+    ctxG.fillStyle = type==='act'
+      ? `rgba(60,180,60,${a})` : `rgba(180,50,50,${a})`;
+    ctxG.fillRect(sqX(sq), sqY(sq), SQ, SQ);
+    ctxG.strokeStyle = type==='act'
+      ? `rgba(60,200,60,0.3)` : `rgba(200,50,50,0.3)`;
+    ctxG.lineWidth=0.5;
+    ctxG.strokeRect(sqX(sq)+0.5, sqY(sq)+0.5, SQ-1, SQ-1);
+  }
+}
+
+// origin piece dim + from-square marker
+function fromMarker(mv) {
+  ctxG.save();
+  ctxG.globalAlpha = 0.55+0.15*Math.sin(t*0.05);
+  ctxG.strokeStyle='rgba(80,200,80,0.6)';
+  ctxG.lineWidth=1.5;
+  ctxG.setLineDash([3,3]);
+  ctxG.lineDashOffset=-t*0.4;
+  ctxG.strokeRect(sqX(mv.from)+1, sqY(mv.from)+1, SQ-2, SQ-2);
+  ctxG.setLineDash([]);
+  ctxG.restore();
+}
+
+// particles
+function spawnP(mv) {
+  particles=[];
+  for(let i=0;i<30;i++){
+    const arr=mv.arrows[Math.floor(Math.random()*mv.arrows.length)];
+    const prog=Math.random();
+    const x1=cx(arr.from),y1=cy(arr.from),x2=cx(arr.to),y2=cy(arr.to);
+    particles.push({
+      x:x1+(x2-x1)*prog, y:y1+(y2-y1)*prog,
+      vx:(x2-x1)/220+(Math.random()-.5)*0.5,
+      vy:(y2-y1)/220+(Math.random()-.5)*0.5,
+      life:Math.random(), decay:.006+Math.random()*.005,
+      rgb:arr.rgb, sz:1+Math.random()*2
+    });
+  }
+}
+function tickP(mv){
+  particles=particles.filter(p=>p.life>0);
+  for(const p of particles){p.x+=p.vx;p.y+=p.vy;p.life-=p.decay;}
+  if(particles.length<35){
+    const arr=mv.arrows[Math.floor(Math.random()*mv.arrows.length)];
+    const prog=Math.random();
+    const x1=cx(arr.from),y1=cy(arr.from),x2=cx(arr.to),y2=cy(arr.to);
+    particles.push({
+      x:x1+(x2-x1)*prog,y:y1+(y2-y1)*prog,
+      vx:(x2-x1)/220+(Math.random()-.5)*.4,
+      vy:(y2-y1)/220+(Math.random()-.5)*.4,
+      life:.8+Math.random()*.2, decay:.005+Math.random()*.005,
+      rgb:arr.rgb, sz:1+Math.random()*2
+    });
+  }
+}
+function drawP(){
+  for(const p of particles){
+    ctxG.save();
+    ctxG.globalAlpha=p.life*0.55;
+    ctxG.fillStyle=`rgb(${p.rgb[0]},${p.rgb[1]},${p.rgb[2]})`;
+    ctxG.beginPath();
+    ctxG.arc(p.x,p.y,p.sz,0,Math.PI*2);
+    ctxG.fill();
+    ctxG.restore();
+  }
+}
+
+// idle scan
+function drawIdle(){
+  const scanY=(t*1.5)%(W+20)-10;
+  ctxG.fillStyle='rgba(40,140,40,0.025)';
+  ctxG.fillRect(0,scanY,W,2);
+  // subtle breathing grid
+  if(t%180<4){
+    ctxG.strokeStyle='rgba(50,150,50,0.04)';
+    ctxG.lineWidth=0.5;
+    for(let i=0;i<8;i++){
+      ctxG.beginPath();ctxG.moveTo(i*SQ,0);ctxG.lineTo(i*SQ,W);ctxG.stroke();
+      ctxG.beginPath();ctxG.moveTo(0,i*SQ);ctxG.lineTo(W,i*SQ);ctxG.stroke();
+    }
+  }
+}
+
+// ── side panel ────────────────────────────────────────────
+function updatePanel(mv) {
+  document.getElementById('moveName').textContent = mv ? mv.label : '—';
+  document.getElementById('moveMeta').innerHTML = mv
+    ? `PIECE: ${mv.piece}<br>FROM: ${mv.from.toUpperCase()}<br>TO: ${mv.to.toUpperCase()}`
+    : 'PIECE: —<br>FROM: —<br>TO: —';
+
+  const list = document.getElementById('deltaList');
+  if(!mv){
+    list.innerHTML='<div style="font-size:9px;color:#2a2a2a;padding:6px 0;letter-spacing:1px;">HOVER A PIECE<br>TO SEE MUTATION</div>';
+  } else {
+    list.innerHTML='';
+    mv.deltas.forEach((d,i)=>{
+      const el=document.createElement('div');
+      el.className=`delta-row ${d.t}`;
+      el.innerHTML=`${d.l}<span class="delta-sub">${d.s}</span>`;
+      list.appendChild(el);
+      setTimeout(()=>el.classList.add('show'), i*60);
+    });
+  }
+
+  const blocks=document.querySelectorAll('.iblock');
+  const ic = mv ? mv.intensityColor : '#1a1a1a';
+  blocks.forEach((b,i)=>b.style.background=mv && i<mv.intensity ? ic : '#1a1a1a');
+}
+
+function updatePhase(){
+  const pl=document.getElementById('phaseLabel');
+  if(!hov){ pl.textContent='—'; pl.style.color='#2e2e2e'; return; }
+  pl.textContent=PNAME[phase];
+  pl.style.color=PCOL[phase];
+}
+
+// ── main loop ─────────────────────────────────────────────
+function loop(){
+  t++;
+  const mv = hov ? MOVES[hov] : null;
+
+  if(mv){ phaseT++; if(phaseT>PDUR[phase]&&phase<2){phase++;phaseT=0;} tickP(mv); }
+
+  // base board (static)
+  drawBase();
+
+  // ghost layer (always clear)
+  ctxG.clearRect(0,0,W,W);
+  if(mv){
+    zones(mv);
+    fromMarker(mv);
+    for(const arr of mv.arrows){
+      const op=arrowOp(arr.ph);
+      const dashed=phase===0&&arr.ph>0;
+      const dashOff=-t*(0.5+arr.ph*.25);
+      arrow(arr.from,arr.to,arr.rgb,op,dashOff,dashed,arr.w);
+    }
+    ghostPiece(mv);
+    drawP();
+  } else {
+    drawIdle();
+  }
+
+  updatePhase();
+  requestAnimationFrame(loop);
+}
+
+// ── interaction ───────────────────────────────────────────
+cB.addEventListener('mousemove', e=>{
+  const r=cB.getBoundingClientRect();
+  const x=(e.clientX-r.left)*(W/r.width);
+  const y=(e.clientY-r.top)*(W/r.height);
+  const sq=pxSq(x,y);
+  const valid=sq&&MOVES[sq];
+  cB.style.cursor=valid?'pointer':'default';
+  if(valid&&sq!==hov){
+    hov=sq; phase=0; phaseT=0;
+    spawnP(MOVES[sq]);
+    updatePanel(MOVES[sq]);
+  } else if(!valid&&hov){
+    hov=null; particles=[];
+    updatePanel(null);
+  }
+});
+cB.addEventListener('mouseleave',()=>{
+  hov=null; particles=[];
+  updatePanel(null);
+});
+
+loop();
+</script>
